@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+  <springProperty scope="context" name="DIR" source="logging.file.path" defaultValue="./" />
+  <springProperty scope="context" name="APP" source="spring.application.name" defaultValue="" />
+  <springProperty scope="context" name="VER" source="spring.application.version" defaultValue="" />
+
+  <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>./logs/${APP}_v${VER}.log</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <fileNamePattern>${DIR}/${APP}/${APP}_v${VER}_%d{yyyy-MM-dd}.gz</fileNamePattern>
+      <totalSizeCap>1GB</totalSizeCap>
+      <maxHistory>30</maxHistory>
+    </rollingPolicy>
+    <encoder>
+      <pattern>%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ} %5p --- [%thread] [%40.40logger{39}] : %m%n</pattern>
+    </encoder>
+  </appender>
+
+  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ} %5p --- [%thread] [%40.40logger{39}] : %m%n</pattern>
+    </encoder>
+  </appender>
+
+  <root level="${logging.level.root}">
+    <appender-ref ref="STDOUT" />
+    <appender-ref ref="FILE" />
+  </root>
+
+</configuration>

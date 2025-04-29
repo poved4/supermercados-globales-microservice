@@ -1,0 +1,34 @@
+application:
+
+  security:
+    jwt:
+      secret-key: ${JWT_SERCRET_KEY}
+      expiration: ${JWT_EXPIRATION}
+
+
+spring:
+
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/${MYSQL_DB}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: "0000"
+
+  # jpa:
+  #   show-sql: false
+  #   hibernate:
+  #     ddl-auto: update
+
+
+management:
+
+  info:
+    env:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+
+springdoc:
+  show-actuator: true

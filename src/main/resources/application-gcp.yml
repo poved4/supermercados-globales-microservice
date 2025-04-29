@@ -1,0 +1,24 @@
+application:
+
+  security:
+    jwt:
+      secret-key: ${JWT_SERCRET_KEY}
+      expiration: ${JWT_EXPIRATION}
+
+
+spring:
+
+  cloud:
+    gcp:
+      sql:
+        database-name: ${MYSQL_DB}
+        instance-connection-name: ${MYSQL_CONNECTION_NAME}
+
+  datasource:
+    username: ${MYSQL_USER}
+    password: ${MYSQL_PASS}
+
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: update
