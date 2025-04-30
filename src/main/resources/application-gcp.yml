@@ -8,17 +8,8 @@ application:
 
 spring:
 
-  cloud:
-    gcp:
-      sql:
-        database-name: ${MYSQL_DB}
-        instance-connection-name: ${MYSQL_CONNECTION_NAME}
-
   datasource:
+    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DB}
+    driver-class-name: com.mysql.cj.jdbc.Driver
     username: ${MYSQL_USER}
     password: ${MYSQL_PASS}
-
-  jpa:
-    show-sql: false
-    hibernate:
-      ddl-auto: update
