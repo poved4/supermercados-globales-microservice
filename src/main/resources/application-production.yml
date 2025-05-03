@@ -1,9 +1,7 @@
 application:
 
-  security:
-    jwt:
-      secret-key: ${JWT_SERCRET_KEY}
-      expiration: ${JWT_EXPIRATION}
+  auth:
+    url: ${MS_AUTH_URL}
 
 
 spring:
