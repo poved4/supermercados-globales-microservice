@@ -1,23 +1,25 @@
 application:
 
   auth:
-    url: ${MS_AUTH_URL}
+    url: http://auth:8080
+
 
 spring:
 
   datasource:
     url: jdbc:mysql://host.docker.internal:3306/supermercados_globales
     driver-class-name: com.mysql.cj.jdbc.Driver
-    username: ${MYSQL_USER}
-    password: ${MYSQL_PASS}
+    username: root
+    password: "0000"
 
   jpa:
     show-sql: true
-    # hibernate:
-    #   ddl-auto: update
+  #   hibernate:
+  #     ddl-auto: update
 
 
 management:
+
   info:
     env:
       enabled: true
@@ -28,4 +30,5 @@ management:
 
 
 springdoc:
+
   show-actuator: true
