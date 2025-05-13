@@ -1,62 +1,56 @@
 package com.ucentral.microservice.configuration;
 
 import java.io.IOException;
+import java.util.Set;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.RestClient;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import com.ucentral.microservice.authorization.service.AuthService;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 
 @Component
+@RequiredArgsConstructor
 public class AuthorizationHeaderSecurityFilter extends OncePerRequestFilter {
 
-    private final RestClient restClient = RestClient.create();
+    private final AuthService authService;
 
-    @Value("${application.auth.url}")
-    private String authServiceUrl;
+    private static final Set<String> PUBLIC_PATHS = Set.of("/auth", "/auth/login", "/auth/register");
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
+        if (request.getRequestURI().startsWith("/api/v1/auth")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-
         if (authHeader == null || authHeader.isBlank()) {
-            reject(response, HttpServletResponse.SC_UNAUTHORIZED, "Missing Authorization header");
+            reject(
+                    response,
+                    HttpServletResponse.SC_UNAUTHORIZED,
+                    "Missing Authorization header");
             return;
         }
 
-        try {
-            restClient.get()
-                .uri(authServiceUrl + "/api/v1/auth")
-                .header(HttpHeaders.AUTHORIZATION, authHeader)
-                .retrieve()
-                .toEntity(String.class);
-
-        } catch (HttpClientErrorException e) {
-            var error = e.getResponseBodyAsString().replace("{\"error\":\"", "");
-            error = error.replace("\"}", "");
-            reject(response, HttpServletResponse.SC_UNAUTHORIZED, error);
-            return;
-        } catch (HttpServerErrorException e) {
-            var error = e.getResponseBodyAsString().replace("{\"error\":\"", "");
-            error = error.replace("\"}", "");
-            reject(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, error);
-            return;
-        } catch (Exception e) {
-            reject(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected error: " + e.getMessage());
+        boolean isAuthenticated = authService.validateToken(authHeader);
+        if (isAuthenticated) {
+            filterChain.doFilter(request, response);
+        } else {
+            reject(
+                    response,
+                    HttpServletResponse.SC_UNAUTHORIZED,
+                    "Invalid or expired token");
             return;
         }
-
-        filterChain.doFilter(request, response);
 
     }
 

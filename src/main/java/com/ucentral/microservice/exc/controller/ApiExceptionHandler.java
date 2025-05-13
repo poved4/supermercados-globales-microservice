@@ -20,12 +20,17 @@ import lombok.extern.slf4j.Slf4j;
 @RestControllerAdvice
 public class ApiExceptionHandler {
 
-  @ExceptionHandler(NoContentException.class)
-  public ResponseEntity<?> handleException(NoContentException e) {
+  @ExceptionHandler(IllegalArgumentException.class)
+  public ResponseEntity<?> handleException(IllegalArgumentException e) {
     return new ResponseEntity<>(
       Map.of("error", e.getMessage()),
-      HttpStatus.NO_CONTENT
+      HttpStatus.BAD_REQUEST
     );
+  }
+
+  @ExceptionHandler(NoContentException.class)
+  public ResponseEntity<?> handleException(NoContentException e) {
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
   @ExceptionHandler(BadRequestException.class)
@@ -67,7 +72,5 @@ public class ApiExceptionHandler {
       HttpStatus.INTERNAL_SERVER_ERROR
     );
   }
-
-  // UnsupportedOperationException IllegalArgumentException
 
 }

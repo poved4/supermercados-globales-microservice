@@ -1,7 +1,9 @@
 application:
 
-  auth:
-    url: http://auth:8080
+  security:
+    jwt:
+      secret-key: ${JWT_SERCRET_KEY}
+      expiration: ${JWT_EXPIRATION}
 
 
 spring:
@@ -28,7 +30,5 @@ management:
       exposure:
         include: '*'
 
-
 springdoc:
-
   show-actuator: true
