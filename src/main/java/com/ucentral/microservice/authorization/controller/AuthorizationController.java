@@ -25,7 +25,7 @@ public class AuthorizationController {
 
   @GetMapping
   public ResponseEntity<?> validateJWT(@RequestHeader("Authorization") String authHeader) {
-    var response = authService.validateToken(authHeader);
+    var response = authService.checkToken(authHeader);
     return ResponseEntity.ok(
       Map.of("isValid", response)
     );

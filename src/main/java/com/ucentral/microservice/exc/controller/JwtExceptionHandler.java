@@ -1,11 +1,15 @@
 package com.ucentral.microservice.exc.controller;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
+
+import com.ucentral.microservice.exc.model.ApiErrorResponse;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
@@ -18,60 +22,40 @@ import lombok.extern.slf4j.Slf4j;
 @RestControllerAdvice
 public class JwtExceptionHandler {
 
+  private String extractPath(WebRequest request) {
+    return request.getDescription(false).replace("uri=", "");
+  }
+
   @ExceptionHandler(ExpiredJwtException.class)
-  public ResponseEntity<?> handleExpiredJwtException(ExpiredJwtException e) {
-    return new ResponseEntity<>(
-      Map.of("error", "Token expirado"),
-      HttpStatus.UNAUTHORIZED
+  public ResponseEntity<?> exceptionHandler(ExpiredJwtException e, WebRequest request) {
+
+    ApiErrorResponse response = new ApiErrorResponse(
+      extractPath(request),
+      LocalDateTime.now(),
+      Map.of("message", e.getMessage())
     );
+
+    return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+
   }
 
-  @ExceptionHandler(UnsupportedJwtException.class)
-  public ResponseEntity<?> handleUnsupportedJwtException(UnsupportedJwtException e) {
-    return new ResponseEntity<>(
-      Map.of("error", "Token no soportado"),
-      HttpStatus.UNAUTHORIZED
-    );
-  }
+  @ExceptionHandler({
+    JwtException.class,
+    SecurityException.class,
+    SignatureException.class,
+    MalformedJwtException.class,
+    UnsupportedJwtException.class
+  })
+  public ResponseEntity<?> exceptionHandler(RuntimeException e, WebRequest request) {
 
-  @ExceptionHandler(MalformedJwtException.class)
-  public ResponseEntity<?> handleMalformedJwtException(MalformedJwtException e) {
-    return new ResponseEntity<>(
-      Map.of("error", "Token mal formado"),
-        HttpStatus.BAD_REQUEST
+    ApiErrorResponse response = new ApiErrorResponse(
+      extractPath(request),
+      LocalDateTime.now(),
+      Map.of("message", e.getMessage())
     );
-  }
 
-  @ExceptionHandler(SecurityException.class)
-  public ResponseEntity<?> handleSecurityException(SecurityException e) {
-    return new ResponseEntity<>(
-      Map.of("error", "Error de seguridad en el token"),
-        HttpStatus.UNAUTHORIZED
-    );
-  }
+    return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
 
-  @ExceptionHandler(SignatureException.class)
-  public ResponseEntity<?> handleSignatureException(SignatureException e) {
-    return new ResponseEntity<>(
-      Map.of("error", "Firma inválida del token"),
-        HttpStatus.UNAUTHORIZED
-    );
-  }
-
-  @ExceptionHandler(IllegalArgumentException.class)
-  public ResponseEntity<?> handleIllegalArgumentException(IllegalArgumentException e) {
-    return new ResponseEntity<>(
-      Map.of("error", "Token inválido o nulo"),
-      HttpStatus.BAD_REQUEST
-    );
-  }
-
-  @ExceptionHandler(JwtException.class)
-  public ResponseEntity<?> handleIllegalArgumentException(JwtException e) {
-    return new ResponseEntity<>(
-      Map.of("error", "Token inválido o nulo"),
-      HttpStatus.BAD_REQUEST
-    );
   }
 
 }

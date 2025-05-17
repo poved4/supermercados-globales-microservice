@@ -1,17 +1,17 @@
 package com.ucentral.microservice.exc.controller;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
 
+import com.ucentral.microservice.exc.model.ApiErrorResponse;
 import com.ucentral.microservice.exc.model.BadRequestException;
-import com.ucentral.microservice.exc.model.InternalServerErrorException;
 import com.ucentral.microservice.exc.model.NoContentException;
-import com.ucentral.microservice.exc.model.NotFoundException;
-import com.ucentral.microservice.exc.model.NotImplementedException;
 import com.ucentral.microservice.exc.model.UnauthorizedException;
 
 import lombok.extern.slf4j.Slf4j;
@@ -20,57 +20,42 @@ import lombok.extern.slf4j.Slf4j;
 @RestControllerAdvice
 public class ApiExceptionHandler {
 
-  @ExceptionHandler(IllegalArgumentException.class)
-  public ResponseEntity<?> handleException(IllegalArgumentException e) {
-    return new ResponseEntity<>(
-      Map.of("error", e.getMessage()),
-      HttpStatus.BAD_REQUEST
-    );
+  private String extractPath(WebRequest request) {
+    return request.getDescription(false).replace("uri=", "");
   }
 
   @ExceptionHandler(NoContentException.class)
-  public ResponseEntity<?> handleException(NoContentException e) {
+  public ResponseEntity<?> exceptionHandler(NoContentException e) {
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
-  @ExceptionHandler(BadRequestException.class)
-  public ResponseEntity<?> handleException(BadRequestException e) {
-    return new ResponseEntity<>(
-      Map.of("error", e.getMessage()),
-      HttpStatus.BAD_REQUEST
+  @ExceptionHandler({
+    BadRequestException.class,
+    IllegalArgumentException.class
+  })
+  public ResponseEntity<?> exceptionHandler(RuntimeException e, WebRequest request) {
+
+    ApiErrorResponse response = new ApiErrorResponse(
+      extractPath(request),
+      LocalDateTime.now(),
+      Map.of("message", e.getMessage())
     );
+
+    return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+
   }
 
   @ExceptionHandler(UnauthorizedException.class)
-  public ResponseEntity<?> handleException(UnauthorizedException e) {
-    return new ResponseEntity<>(
-      Map.of("error", e.getMessage()),
-      HttpStatus.UNAUTHORIZED
-    );
-  }
+  public ResponseEntity<?> exceptionHandler(UnauthorizedException e, WebRequest request) {
 
-  @ExceptionHandler(NotFoundException.class)
-  public ResponseEntity<?> handleException(NotFoundException e) {
-    return new ResponseEntity<>(
-      Map.of("error", e.getMessage()),
-      HttpStatus.NOT_FOUND
+    ApiErrorResponse response = new ApiErrorResponse(
+      extractPath(request),
+      LocalDateTime.now(),
+      Map.of("message", e.getMessage())
     );
-  }
 
-  @ExceptionHandler(NotImplementedException.class)
-  public ResponseEntity<?> handleException(NotImplementedException e) {
-    return new ResponseEntity<>(
-      Map.of("error", e.getMessage()),
-      HttpStatus.NOT_IMPLEMENTED
-    );
-  }
+    return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
 
-  @ExceptionHandler(InternalServerErrorException.class)
-  public ResponseEntity<?> handleException(InternalServerErrorException e) {
-    return new ResponseEntity<>(
-      Map.of("error", e.getMessage()),
-      HttpStatus.INTERNAL_SERVER_ERROR
-    );
   }
 
 }

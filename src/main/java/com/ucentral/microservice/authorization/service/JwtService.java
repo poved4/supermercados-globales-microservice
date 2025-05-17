@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.ucentral.microservice.authorization.model.entity.Account;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -18,61 +19,76 @@ import io.jsonwebtoken.security.Keys;
 @Service
 public class JwtService {
 
+  private static final String BEARER_PREFIX = "Bearer ";
+
+  private static final Pattern JWT_PATTERN = Pattern.compile("^[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+$");
+
   @Value("${application.security.jwt.secret-key}")
   private String secretKey;
 
   @Value("${application.security.jwt.expiration}")
-  private Long jwtExpiration;
+  private Long jwtExpirationMillis;
+
+  public String getBearerKey() {
+    return BEARER_PREFIX;
+  }
 
   private Key getSigningKey() {
     return Keys.hmacShaKeyFor(secretKey.getBytes());
   }
 
+  private Claims extractAllClaims(String jwt) {
+    return Jwts
+        .parserBuilder()
+        .setSigningKey(getSigningKey())
+        .build()
+        .parseClaimsJws(jwt)
+        .getBody();
+  }
+
+  public String extractUsername(String jwt) {
+    return extractAllClaims(jwt).getSubject();
+  }
+
+  public Boolean isTokenExpired(String jwt) {
+    try {
+      return extractAllClaims(jwt)
+          .getExpiration()
+          .before(new Date());
+    } catch (JwtException | IllegalArgumentException e) {
+      return true;
+    }
+  }
+
+  private Boolean isValidTokenFormat(String jwt) {
+    return JWT_PATTERN.matcher(jwt).matches();
+  }
+
+  public Boolean isValidToken(String jwt) {
+    return isValidTokenFormat(jwt)
+        && !isTokenExpired(jwt);
+  }
+
   public String generateToken(Account account) {
 
     final Date now = new Date();
-    final Date expiry = new Date(now.getTime() + jwtExpiration);
+    final Date expiry = new Date(now.getTime() + jwtExpirationMillis);
+
+    Map<String, Object> claims = Map.of(
+        "id", String.valueOf(account.getId()),
+        "email", account.getEmail(),
+        "status", String.valueOf(account.getStatus()),
+        "role", account.getAccountRole().getName()
+    );
 
     return Jwts.builder()
-        .setId(account.getId().toString().trim())
-        .setSubject(account.getEmail().trim())
+        .setId(String.valueOf(account.getId()))
+        .setSubject(account.getEmail())
         .setIssuedAt(now)
         .setExpiration(expiry)
-        .addClaims(Map.of("name", account.getName().trim()))
+        .addClaims(claims)
         .signWith(getSigningKey(), SignatureAlgorithm.HS256)
         .compact();
-
-  }
-
-  private Claims extractAllClaims(String token) {
-
-    if (!isValidFormat(token)) {
-      throw new IllegalArgumentException("El token JWT tiene un formato inválido.");
-    }
-
-    return Jwts.parserBuilder()
-      .setSigningKey(getSigningKey())
-      .build()
-      .parseClaimsJws(token)
-      .getBody();
-
-  }
-
-  public String extractUsername(String token) {
-    return extractAllClaims(token).getSubject();
-  }
-
-  public boolean isTokenExpired(String token) {
-    return extractAllClaims(token)
-      .getExpiration()
-      .before(new Date());
-  }
-
-  public boolean isValidFormat(String token) {
-    return Pattern
-      .compile("^[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+$")
-      .matcher(token)
-      .matches();
   }
 
 }

@@ -1,5 +1,6 @@
 package com.ucentral.microservice.exc.controller;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,12 +10,21 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
+
+import com.ucentral.microservice.exc.model.ApiErrorResponse;
+
+import jakarta.validation.ConstraintViolationException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+  private String extractPath(WebRequest request) {
+    return request.getDescription(false).replace("uri=", "");
+  }
+
   @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ResponseEntity<?> handleException(MethodArgumentNotValidException e) {
+  public ResponseEntity<?> exceptionHandler(MethodArgumentNotValidException e, WebRequest request) {
 
     Map<String, String> errors = new HashMap<>();
 
@@ -24,14 +34,27 @@ public class GlobalExceptionHandler {
       errors.put(fieldName, errorMessage);
     });
 
-    return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    ApiErrorResponse response = new ApiErrorResponse(
+      extractPath(request),
+      LocalDateTime.now(),
+      errors
+    );
+
+    return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+
   }
 
-  @ExceptionHandler(IllegalArgumentException.class)
-  public ResponseEntity<?> handleException(IllegalArgumentException e) {
-    return new ResponseEntity<>(
-        Map.of("error", e.getMessage()),
-        HttpStatus.BAD_REQUEST);
+  @ExceptionHandler(ConstraintViolationException.class)
+  public ResponseEntity<?> exceptionHandler(ConstraintViolationException e, WebRequest request) {
+
+    ApiErrorResponse response = new ApiErrorResponse(
+      extractPath(request),
+      LocalDateTime.now(),
+      e.getMessage()
+    );
+
+    return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+
   }
 
 }

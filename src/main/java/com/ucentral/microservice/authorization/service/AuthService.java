@@ -22,26 +22,6 @@ public class AuthService {
   private final SessionRepository sessionRepository;
   private final AccountRepository accountRepository;
 
-  private String getAccessToken(String authorizationHeader) {
-
-    if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-      throw new IllegalArgumentException("Invalid Bearer Token");
-    }
-
-    final String accessToken = authorizationHeader.substring(7).trim();
-
-    if (!jwtService.isValidFormat(accessToken)) {
-      throw new IllegalArgumentException("Invalid Bearer Token");
-    }
-
-    if (jwtService.isTokenExpired(accessToken)) {
-      throw new UnauthorizedException("Invalid or expired token");
-    }
-
-    return accessToken.trim();
-
-  }
-
   private Session getCurrentSession(String accessToken) {
     return sessionRepository
         .findByAccessToken(accessToken)
@@ -98,7 +78,7 @@ public class AuthService {
 
   }
 
-  public Boolean validateToken(String authorizationHeader) {
+  public Boolean checkToken(String authorizationHeader) {
 
     final String accessToken = getAccessToken(authorizationHeader);
 
@@ -123,6 +103,34 @@ public class AuthService {
 
     return Boolean.TRUE;
 
+  }
+
+  private String getAccessToken(String authorizationHeader) {
+
+    if (!isValidAuthorizationHeader(authorizationHeader)) {
+      throw new IllegalArgumentException("Invalid Bearer Token");
+    }
+
+    final String accessToken = extractToken(authorizationHeader);
+
+    if (!jwtService.isValidToken(accessToken)) {
+      throw new UnauthorizedException("Invalid Or Expired Token");
+    }
+
+    return accessToken;
+
+  }
+
+  private Boolean isValidAuthorizationHeader(String header) {
+    return header != null
+        && !header.isBlank()
+        && header.startsWith(jwtService.getBearerKey());
+  }
+
+  private String extractToken(String authorizationHeader) {
+    return authorizationHeader
+        .substring(jwtService.getBearerKey().length())
+        .trim();
   }
 
 }

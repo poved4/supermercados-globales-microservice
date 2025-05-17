@@ -1,12 +1,15 @@
 package com.ucentral.microservice.exc.controller;
 
 import java.sql.SQLIntegrityConstraintViolationException;
-import java.util.Map;
+import java.time.LocalDateTime;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
+
+import com.ucentral.microservice.exc.model.ApiErrorResponse;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -14,12 +17,21 @@ import lombok.extern.slf4j.Slf4j;
 @RestControllerAdvice
 public class MySqlExceptionHandler {
 
+  private String extractPath(WebRequest request) {
+    return request.getDescription(false).replace("uri=", "");
+  }
+
   @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
-  public ResponseEntity<?> handleException(SQLIntegrityConstraintViolationException e) {
-    return new ResponseEntity<>(
-      Map.of("error", e.getMessage()),
-      HttpStatus.BAD_REQUEST
+  public ResponseEntity<?> exceptionHandler(SQLIntegrityConstraintViolationException e, WebRequest request) {
+
+    ApiErrorResponse response = new ApiErrorResponse(
+      extractPath(request),
+      LocalDateTime.now(),
+      e.getMessage()
     );
+
+    return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+
   }
 
 }
