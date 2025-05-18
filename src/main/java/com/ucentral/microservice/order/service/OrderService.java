@@ -67,7 +67,7 @@ public class OrderService {
     Order order = orderOpt.get();
     OrderStatus newStatus = currentStatus.get();
 
-    order.setStatusId(newStatus);
+    order.setStatus(newStatus);
 
     if (newStatus.getName().toUpperCase().equals("ENTREGADO")) {
       order.setDeliveryDate(LocalDateTime.now());

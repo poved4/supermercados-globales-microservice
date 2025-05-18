@@ -2,6 +2,7 @@ package com.ucentral.microservice.exc.controller;
 
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +28,7 @@ public class MySqlExceptionHandler {
     ApiErrorResponse response = new ApiErrorResponse(
       extractPath(request),
       LocalDateTime.now(),
-      e.getMessage()
+      Map.of("message", e.getMessage())
     );
 
     return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);

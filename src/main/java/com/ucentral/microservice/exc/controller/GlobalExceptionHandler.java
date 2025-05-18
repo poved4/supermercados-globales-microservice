@@ -50,7 +50,7 @@ public class GlobalExceptionHandler {
     ApiErrorResponse response = new ApiErrorResponse(
       extractPath(request),
       LocalDateTime.now(),
-      e.getMessage()
+      Map.of("message", e.getMessage())
     );
 
     return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);

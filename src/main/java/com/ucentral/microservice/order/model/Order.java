@@ -31,7 +31,7 @@ public class Order {
 
   @ManyToOne(optional = false)
   @JoinColumn(name = "status_id", referencedColumnName = "id")
-  private OrderStatus statusId;
+  private OrderStatus status;
 
   @Column(name = "branch_id", nullable = false)
   private Long branchId;
