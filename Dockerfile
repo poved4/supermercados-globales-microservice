@@ -1,18 +1,19 @@
-FROM maven:3.9.9-eclipse-temurin-21 AS builder
+# Build java application
+FROM maven:3.9-eclipse-temurin-21-alpine AS build
 
 WORKDIR /app
 
-COPY pom.xml .
-COPY src ./src
+COPY . .
 
-RUN mvn clean package -DskipTests
+# RUN mvn clean package -DskipTests
+RUN mvn clean package -Dmaven.test.skip=true
 
-FROM eclipse-temurin:21-jre-alpine
+
+# Build docker container
+FROM amazoncorretto:21-alpine-jdk
 
 WORKDIR /app
 
-COPY --from=builder /app/target/*.jar app.jar
+COPY --from=build /app/target/*.jar app.jar
 
-EXPOSE 8080
-
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
