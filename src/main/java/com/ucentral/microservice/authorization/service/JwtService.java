@@ -75,11 +75,11 @@ public class JwtService {
     final Date expiry = new Date(now.getTime() + jwtExpirationMillis);
 
     Map<String, Object> claims = Map.of(
-        "id", String.valueOf(account.getId()),
-        "email", account.getEmail(),
-        "status", String.valueOf(account.getStatus()),
-        "role", account.getAccountRole().getName()
+      "id", String.valueOf(account.getId())
     );
+    // "email", account.getEmail(),
+    // "status", String.valueOf(account.getStatus()),
+    // "role", account.getAccountRole().getName()
 
     return Jwts.builder()
         .setId(String.valueOf(account.getId()))

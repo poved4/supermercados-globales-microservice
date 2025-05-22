@@ -2,8 +2,8 @@ application:
 
   security:
     jwt:
-      secret-key: ${JWT_SERCRET_KEY}
-      expiration: ${JWT_EXPIRATION}
+      secret-key: VUZTys5QdyfGP4iRe4TIe8o4k2YsSYk7j7j9liqce26grAmyS7
+      expiration: 21600000
 
 
 spring:
