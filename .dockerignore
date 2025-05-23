@@ -33,10 +33,14 @@ build/
 ### VS Code ###
 .vscode/
 
-# log files
+# Control de versiones
+.git/
+.gitignore
+
+# Archivos de logs
 *.log
 logging/
 
-# config files
+# Archivos de datos o configuración sensible que no deberían ir en la imagen
 *.env
 .env*

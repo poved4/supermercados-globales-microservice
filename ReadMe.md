@@ -14,5 +14,5 @@ docker build -t microservice .
 ```
 
 ``` bash
-docker run -d -t --name microservice --network=ing_software_ii --env-file .env -p 8081:8081 microservice
+docker run -t --name microservice --network=ing_software_ii --env-file .env -p 8080:8080 microservice
 ```
