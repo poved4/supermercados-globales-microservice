@@ -9,7 +9,7 @@ application:
 spring:
 
   datasource:
-    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DB}
+    url: jdbc:mysql://34.168.212.133:3306/supermercados_globales
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: ${MYSQL_USER}
     password: ${MYSQL_PASS}
