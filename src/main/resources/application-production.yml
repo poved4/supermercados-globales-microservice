@@ -3,7 +3,7 @@ application:
   security:
     jwt:
       secret-key: ${JWT_SERCRET_KEY}
-      expiration: ${JWT_EXPIRATION}
+      expiration: ${JWT_EXPIRATION:21600000}
 
 
 spring:
