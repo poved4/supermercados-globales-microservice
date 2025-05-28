@@ -10,9 +10,9 @@
 ## docker
 
 ``` bash
-docker build -t microservice .
+docker build -t ms .
 ```
 
 ``` bash
-docker run -t --name microservice --network=ing_software_ii --env-file .env -p 8080:8080 microservice
+docker run -d --name ms --network=ing_software_ii --env-file .env -p 8080:8080 ms
 ```
